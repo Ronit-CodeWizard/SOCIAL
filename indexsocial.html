@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeWizard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fork-awesome/1.2.0/css/fork-awesome.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root {
+    --bg:     #0e0e10;
+    --c1:     #141416;
+    --c2:     #1a1a1d;
+    --c3:     #202024;
+    --c4:     #272729;
+    --white:  #ffffff;
+    --off:    #f0ece6;
+    --mid:    #6a6a74;
+    --dim:    #2e2e34;
+    --border: rgba(255,255,255,0.07);
+    --bh:     rgba(255,255,255,0.16);
+    --r:      22px;
+    --r-sm:   14px;
+    --gap:    10px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 16px 64px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.025; pointer-events: none; z-index: 0;
+  }
+
+  /* ═══════════════════════════════
+     NAVBAR
+  ═══════════════════════════════ */
+  .navbar {
+    position: sticky; top: 0; z-index: 100;
+    width: 100%; max-width: 612px;
+    padding: 12px 0;
+    display: flex; align-items: center; justify-content: space-between;
+    opacity: 0;
+    animation: rise 0.7s cubic-bezier(0.22,1,0.36,1) 0.02s forwards;
+  }
+
+  .navbar::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(14,14,16,0.85);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border-bottom: 1px solid var(--border);
+    pointer-events: none; z-index: -1;
+  }
+
+  .nav-home {
+    display: flex; align-items: center; gap: 8px;
+    text-decoration: none; color: var(--white);
+    padding: 8px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--c2);
+    font-size: 13px; font-weight: 600;
+    letter-spacing: -0.01em;
+    transition: all 0.22s ease;
+  }
+  .nav-home i { font-size: 11px; color: var(--mid); transition: color 0.22s; }
+  .nav-home:hover { background: var(--c3); border-color: var(--bh); }
+  .nav-home:hover i { color: var(--white); }
+
+  .nav-brand {
+    font-size: 14px; font-weight: 800;
+    letter-spacing: -0.02em;
+    position: absolute; left: 50%; transform: translateX(-50%);
+  }
+
+  /* ── MENU BUTTON + POPUP ── */
+  .nav-right { position: relative; }
+
+  .nav-menu-btn {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: var(--c2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--mid);
+    cursor: pointer; transition: all 0.22s ease;
+  }
+  .nav-menu-btn:hover { background: var(--c3); border-color: var(--bh); color: var(--white); }
+  .nav-menu-btn.open  { background: var(--white); color: var(--bg); border-color: var(--white); }
+
+  /* POPUP CARD */
+  .popup-menu {
+    position: absolute; top: calc(100% + 10px); right: 0;
+    width: 200px;
+    background: var(--c1);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 8px;
+    display: flex; flex-direction: column; gap: 2px;
+    opacity: 0; pointer-events: none;
+    transform: translateY(-8px) scale(0.97);
+    transform-origin: top right;
+    transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.22,1,0.36,1);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    z-index: 201;
+  }
+  .popup-menu.open {
+    opacity: 1; pointer-events: all;
+    transform: translateY(0) scale(1);
+  }
+
+  .popup-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    text-decoration: none; color: var(--white);
+    font-size: 13px; font-weight: 500;
+    transition: background 0.18s ease;
+    cursor: pointer;
+  }
+  .popup-item:hover { background: var(--c3); }
+  .popup-item i { font-size: 13px; color: var(--mid); width: 16px; text-align: center; transition: color 0.18s; }
+  .popup-item:hover i { color: var(--white); }
+
+  .popup-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  
+  /* ── Remove blue selection box ── */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: transparent;
+  color: inherit;
+}
+
+::-moz-selection {
+  background: transparent;
+  color: inherit;
+}
+  
+  
+  /* ═══════════════════════════════
+     HEADER
+  ═══════════════════════════════ */
+  .header {
+    text-align: center;
+    margin: 28px 0 24px;
+    opacity: 0;
+    animation: rise 0.8s cubic-bezier(0.22,1,0.36,1) 0.08s forwards;
+    position: relative; z-index: 1;
+  }
+
+  .avatar {
+    width: 74px; height: 74px; border-radius: 50%;
+    background: var(--c2); border: 1.5px solid var(--dim);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px; position: relative;
+  }
+  .avatar i { font-size: 28px; color: var(--white); }
+
+  .online {
+    position: absolute; bottom: 2px; right: 2px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #3be07b; border: 2.5px solid var(--bg);
+    animation: breathe 2.5s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%,100% { box-shadow: 0 0 0 0 rgba(59,224,123,0.5); }
+    50%      { box-shadow: 0 0 0 5px rgba(59,224,123,0); }
+  }
+
+  .h-name { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+  .h-sub  { font-size: 11.5px; color: var(--mid); font-weight: 400; margin-top: 4px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* ═══════════════════════════════
+     BENTO GRID
+  ═══════════════════════════════ */
+  .bento {
+    width: 100%; max-width: 580px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap);
+    position: relative; z-index: 1;
+  }
+
+  .span2 { grid-column: span 2; }
+  .span1 { grid-column: span 1; }
+
+  /* BASE TILE */
+  .tile {
+    background: var(--c1);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden; position: relative;
+    text-decoration: none; color: var(--white);
+    display: flex; flex-direction: column;
+    transition: border-color 0.3s, transform 0.28s cubic-bezier(0.22,1,0.36,1), background 0.3s;
+    opacity: 0;
+  }
+  .tile:hover {
+    border-color: var(--bh);
+    transform: translateY(-3px) scale(1.007);
+    background: var(--c2); z-index: 2;
+  }
+
+  .tile:nth-child(1)  { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.10s forwards; }
+  .tile:nth-child(2)  { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.16s forwards; }
+  .tile:nth-child(3)  { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.22s forwards; }
+  .tile:nth-child(4)  { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.28s forwards; }
+  .tile:nth-child(5)  { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.34s forwards; }
+  .tile:nth-child(6)  { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.40s forwards; }
+  .tile:nth-child(7)  { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.46s forwards; }
+  .tile:nth-child(8)  { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.52s forwards; }
+  .tile:nth-child(9)  { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.58s forwards; }
+  .tile:nth-child(10) { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.64s forwards; }
+  .tile:nth-child(11) { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.70s forwards; }
+  .tile:nth-child(12) { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.76s forwards; }
+  .tile:nth-child(13) { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.82s forwards; }
+  .tile:nth-child(14) { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.88s forwards; }
+  .tile:nth-child(15) { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 0.94s forwards; }
+  .tile:nth-child(16) { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 1.00s forwards; }
+  .tile:nth-child(17) { animation: rise 0.65s cubic-bezier(0.22,1,0.36,1) 1.06s forwards; }
+
+  /* CORNER ARROW */
+  .t-arrow {
+    position: absolute; top: 18px; right: 18px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--c3); border: 1px solid var(--dim);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--mid); font-size: 11px;
+    transition: all 0.25s ease; z-index: 2;
+  }
+  .tile:hover .t-arrow      { background: var(--white); color: var(--bg); border-color: var(--white); transform: translateX(2px) translateY(-2px); }
+  .tile-white .t-arrow      { background: rgba(0,0,0,0.08); border-color: rgba(0,0,0,0.1); color: #555; }
+  .tile-white:hover .t-arrow{ background: var(--bg); color: var(--white); border-color: var(--bg); }
+
+  /* ICON BOX */
+  .t-icon {
+    width: 46px; height: 46px; border-radius: 13px;
+    background: var(--c3); border: 1px solid var(--dim);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; transition: background 0.3s; flex-shrink: 0;
+  }
+  .tile:hover .t-icon { background: var(--c4); }
+
+  .t-label { font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mid); margin-top: 18px; }
+  .t-title { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px; line-height: 1.1; }
+  .t-user  { font-size: 12px; color: var(--mid); font-weight: 400; margin-top: 5px; }
+
+  /* WHITE TILE */
+  .tile-white { background: var(--white) !important; color: var(--bg) !important; border-color: var(--white) !important; }
+  .tile-white:hover { background: var(--off) !important; border-color: var(--off) !important; }
+  .tile-white .t-icon   { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.1); }
+  .tile-white .t-label  { color: #999; }
+  .tile-white .t-title  { color: var(--bg); }
+  .tile-white .t-user   { color: #888; }
+  .tile-white:hover .t-icon { background: rgba(0,0,0,0.1); }
+
+  /* HERO TILE */
+  .tile-hero { padding: 30px 28px 26px; min-height: 160px; justify-content: space-between; }
+  .hero-kicker { font-size: 10.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 10px; }
+  .hero-heading { font-size: clamp(28px, 8vw, 38px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.0; }
+  .hero-heading em { font-style: normal; font-weight: 300; opacity: 0.45; }
+  .hero-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; }
+  .hero-url  { font-size: 12px; color: #888; font-weight: 400; }
+  .hero-cta  { width: 40px; height: 40px; border-radius: 50%; background: var(--bg); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 14px; transition: transform 0.22s ease; }
+  .tile-hero:hover .hero-cta { transform: translate(3px,-3px); }
+
+  /* STATS TILE */
+  .tile-stats { padding: 0; cursor: default; }
+  .tile-stats:hover { transform: none; }
+  .stats-inner { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .stat-cell { padding: 20px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-right: 1px solid var(--border); }
+  .stat-cell:last-child { border-right: none; }
+  .stat-val { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .stat-key { font-size: 9.5px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mid); margin-top: 5px; }
+
+  /* STANDARD TILE */
+  .tile-std { padding: 24px; min-height: 170px; justify-content: space-between; }
+
+  /* WIDE TILE */
+  .tile-wide { padding: 20px 22px; flex-direction: row; align-items: center; gap: 16px; min-height: 80px; }
+  .wide-icon { width: 46px; height: 46px; border-radius: 13px; background: var(--c3); border: 1px solid var(--dim); display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; transition: background 0.3s; }
+  .tile-wide:hover .wide-icon { background: var(--c4); }
+  .wide-body { flex: 1; min-width: 0; }
+  .wide-title { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; }
+  .wide-user  { font-size: 11px; color: var(--mid); font-weight: 400; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wide-arrow { width: 30px; height: 30px; border-radius: 50%; background: var(--c3); border: 1px solid var(--dim); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--mid); flex-shrink: 0; transition: all 0.25s ease; }
+  .tile-wide:hover .wide-arrow { background: var(--white); color: var(--bg); border-color: var(--white); }
+
+  /* YOUTUBE TILE */
+  .tile-yt { padding: 0; min-height: 188px; justify-content: flex-end; background: #0a0a0c; }
+  .yt-bg   { position: absolute; inset: 0; z-index: 0; background: linear-gradient(145deg, #1c1c22 0%, #111115 60%, #0a0a0c 100%); }
+  .yt-lines { position: absolute; inset: 0; z-index: 0; background-image: repeating-linear-gradient(-55deg, transparent 0px, transparent 18px, rgba(255,255,255,0.022) 18px, rgba(255,255,255,0.022) 19px); }
+  .yt-icon-wrap { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-60%); z-index: 1; }
+  .yt-icon-wrap i { font-size: 56px; color: var(--white); opacity: 0.82; filter: drop-shadow(0 4px 24px rgba(255,255,255,0.14)); transition: opacity 0.3s, filter 0.3s, transform 0.3s; }
+  .tile-yt:hover .yt-icon-wrap i { opacity: 1; filter: drop-shadow(0 4px 36px rgba(255,255,255,0.28)); transform: scale(1.08); }
+  .yt-info { position: relative; z-index: 2; padding: 13px 18px 17px; background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, transparent 100%); display: flex; align-items: flex-end; justify-content: space-between; }
+  .yt-info .t-label { margin-top: 0; }
+  .yt-info .t-title { font-size: 15px; }
+  .yt-user-tag { font-size: 11px; color: rgba(255,255,255,0.35); white-space: nowrap; }
+
+  /* COFFEE TILE */
+  .tile-coffee { padding: 24px; min-height: 170px; justify-content: space-between; background: var(--c2); }
+
+  /* BMC icon */
+  .bmc-svg { width: 26px; height: 26px; }
+
+  /* SKILLS TILE */
+  .tile-skills { padding: 22px; cursor: default; }
+  .tile-skills:hover { transform: none; }
+  .skills-head { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mid); margin-bottom: 14px; }
+  .skills-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+  .skill-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 13px;
+    background: var(--c3); border: 1px solid var(--dim);
+    border-radius: 100px;
+    font-size: 12px; font-weight: 500; color: var(--mid);
+    transition: all 0.22s ease;
+  }
+  .skill-pill i { font-size: 12px; }
+  .skill-pill:hover { background: var(--white); color: var(--bg); border-color: var(--white); transform: translateY(-2px); }
+
+  /* CONTACT CTA */
+  .tile-contact { padding: 24px 26px; flex-direction: row; align-items: center; justify-content: space-between; gap: 14px; min-height: 92px; }
+  .contact-kicker { font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
+  .contact-title  { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin-top: 3px; }
+  .contact-sub    { font-size: 11px; margin-top: 3px; }
+  .tile-white .contact-kicker { color: #999; }
+  .tile-white .contact-sub    { color: #888; }
+  .contact-btn { flex-shrink: 0; background: var(--bg); color: var(--white); border: none; border-radius: 100px; padding: 11px 20px; font-size: 12px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; letter-spacing: -0.01em; transition: transform 0.22s; white-space: nowrap; display: flex; align-items: center; gap: 7px; }
+  .tile-contact:hover .contact-btn { transform: translateX(4px); }
+
+  /* AVAIL STRIP */
+  .tile-avail { padding: 15px 22px; flex-direction: row; align-items: center; gap: 13px; cursor: default; min-height: 60px; }
+  .tile-avail:hover { transform: none; }
+  .avail-dot { width: 8px; height: 8px; border-radius: 50%; background: #3be07b; flex-shrink: 0; animation: breathe 2.5s ease-in-out infinite; }
+  .avail-title { font-size: 13px; font-weight: 500; }
+  .avail-sub   { font-size: 11px; color: var(--mid); margin-top: 1px; }
+
+  /* ═══════════════════════════════
+     FOOTER
+  ═══════════════════════════════ */
+  .site-footer {
+    width: 100%; max-width: 580px;
+    margin-top: 28px; position: relative; z-index: 1;
+    opacity: 0;
+    animation: rise 0.7s cubic-bezier(0.22,1,0.36,1) 1.2s forwards;
+  }
+  .footer-inner { background: var(--c1); border: 1px solid var(--border); border-radius: var(--r); padding: 24px 22px 20px; display: flex; flex-direction: column; gap: 18px; }
+  .footer-brand { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .footer-logo  { display: flex; align-items: center; gap: 10px; }
+  .footer-logo-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--c3); border: 1px solid var(--dim); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .footer-logo-name { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
+  .footer-tagline { font-size: 11px; color: var(--mid); line-height: 1.6; text-align: right; }
+  .footer-divider { height: 1px; background: var(--border); }
+  .footer-nav { display: flex; flex-wrap: wrap; gap: 6px; }
+  .footer-nav-link { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; background: var(--c2); border: 1px solid var(--dim); border-radius: 100px; font-size: 11.5px; font-weight: 500; color: var(--mid); text-decoration: none; transition: all 0.22s ease; }
+  .footer-nav-link i { font-size: 10px; }
+  .footer-nav-link:hover { background: var(--white); color: var(--bg); border-color: var(--white); transform: translateY(-2px); }
+  .footer-bottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .footer-copy { font-size: 11px; color: var(--mid); }
+  .footer-made { font-size: 11px; color: var(--dim); }
+
+  /* ═══════════════════════════════
+     ANIMATION
+  ═══════════════════════════════ */
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ═══════════════════════════════
+     CURSOR
+  ═══════════════════════════════ */
+  @media (pointer: fine) {
+    * { cursor: none !important; }
+    #cur { position: fixed; width: 10px; height: 10px; background: var(--white); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); mix-blend-mode: difference; transition: width 0.2s, height 0.2s; }
+    #cur.big { width: 44px; height: 44px; }
+  }
+
+  ::-webkit-scrollbar { width: 0; }
+  
+  
+  .fka { font-family: 'ForkAwesome' !important; display: inline-block; font-style: normal; font-weight: normal; line-height: 1; -webkit-font-smoothing: antialiased; }
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+
+<!-- ═══════════════ NAVBAR ═══════════════ -->
+<nav class="navbar">
+  <a href="#" class="nav-home">
+    <i class="fas fa-house"></i> Home
+  </a>
+  <span class="nav-brand">CodeWizard</span>
+
+  <div class="nav-right">
+    <div class="nav-menu-btn" id="menuBtn" onclick="toggleMenu()">
+      <i class="fas fa-bars" id="menuIcon"></i>
+    </div>
+
+    <!-- POPUP MENU -->
+    <div class="popup-menu" id="popupMenu">
+      <a href="mailto:service.codewizard@gmail.com" class="popup-item">
+        <i class="fas fa-envelope"></i> Contact
+      </a>
+      <a href="#skills-section" class="popup-item" onclick="closeMenu()">
+        <i class="fas fa-code"></i> Skills
+      </a>
+      <div class="popup-divider"></div>
+      <a href="https://www.facebook.com/share/1GWyyuRntN/" target="_blank" class="popup-item">
+        <i class="fab fa-facebook-f"></i> Facebook
+      </a>
+      <a href="https://www.instagram.com/codewizard.inc" target="_blank" class="popup-item">
+        <i class="fab fa-instagram"></i> Instagram
+      </a>
+      <a href="https://x.com/CodeWizard_inc" target="_blank" class="popup-item">
+        <i class="fab fa-x-twitter"></i> X (Twitter)
+      </a>
+      <a href="https://github.com/Ronit-CodeWizard" target="_blank" class="popup-item">
+        <i class="fab fa-github"></i> GitHub
+      </a>
+      <a href="https://www.linkedin.com/in/ronit-majhi-531bb6304" target="_blank" class="popup-item">
+        <i class="fab fa-linkedin-in"></i> LinkedIn
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<div class="header">
+  <div class="avatar">
+    <img src="https://i.supaimg.com/92f82b8e-0941-4720-9455-b7257d1262f2/6c95b72a-4978-4c1d-bd13-fac0b0e10ea4.png"
+       alt="CodeWizard Logo" style="width:58px;height:58px;object-fit:contain;filter: brightness(0) invert(1);" >
+    <div class="online"></div>
+  </div>
+  <div class="h-name">CodeWizard</div>
+  <div class="h-sub">Full-Stack · Designer · DevTools</div>
+</div>
+
+<!-- ═══════════════ BENTO ═══════════════ -->
+<div class="bento">
+
+  <!-- 1. PORTFOLIO hero (white, full) -->
+  <a href="https://github.com/Ronit-CodeWizard" target="_blank" class="tile tile-hero tile-white span2">
+    <div>
+      <div class="hero-kicker">Featured Work</div>
+      <div class="hero-heading">Portfolio &amp; <em>Projects</em></div>
+    </div>
+    <div class="hero-foot">
+     <div class="hero-url">codewizard.inc</div>
+      <div class="hero-cta"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    </div>
+  </a>
+
+  <!-- 2. STATS -->
+  <div class="tile tile-stats span2">
+    <div class="stats-inner">
+      <div class="stat-cell"><div class="stat-val" id="repos">0</div><div class="stat-key">Repos</div></div>
+      <div class="stat-cell"><div class="stat-val" id="stars">0</div><div class="stat-key">Stars</div></div>
+      <div class="stat-cell"><div class="stat-val" id="commits">0</div><div class="stat-key">Commits</div></div>
+    </div>
+  </div>
+
+  <!-- 3. GITHUB -->
+  <a href="https://github.com/Ronit-CodeWizard" target="_blank" class="tile tile-std span1">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="t-icon"><i class="fab fa-github"></i></div>
+    <div class="t-label">Source Code</div>
+    <div class="t-title">GitHub</div>
+    <div class="t-user">@Ronit-CodeWizard</div>
+  </a>
+
+  <!-- 4. YOUTUBE (monochrome) -->
+  <a href="https://www.youtube.com/@CodeWizard_inc" target="_blank" class="tile tile-yt span1">
+    <div class="t-arrow" style="z-index:3;"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="yt-bg"></div>
+    <div class="yt-lines"></div>
+    <div class="yt-icon-wrap"><i class="fab fa-youtube"></i></div>
+    <div class="yt-info">
+      <div>
+        <div class="t-label">Channel</div>
+        <div class="t-title">YouTube</div>
+      </div>
+      <div class="yt-user-tag">@CodeWizard_inc</div>
+    </div>
+  </a>
+
+  <!-- 5. FACEBOOK (wide) -->
+  <a href="https://www.facebook.com/share/1GWyyuRntN/" target="_blank" class="tile tile-wide span2">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="wide-icon"><i class="fab fa-facebook-f"></i></div>
+    <div class="wide-body">
+      <div class="wide-title">Facebook</div>
+      <div class="wide-user">RONIT MAJHI</div>
+    </div>
+    </a>
+
+  <!-- 6. INSTAGRAM -->
+  <a href="https://www.instagram.com/codewizard.inc" target="_blank" class="tile tile-std span1">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="t-icon"><i class="fab fa-instagram"></i></div>
+    <div class="t-label">Photos &amp; Reels</div>
+    <div class="t-title">Instagram</div>
+    <div class="t-user">@CodeWizard.inc</div>
+  </a>
+
+  <!-- 7. X / TWITTER -->
+  <a href="https://x.com/CodeWizard_inc" target="_blank" class="tile tile-std span1">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="t-icon"><i class="fab fa-x-twitter"></i></div>
+    <div class="t-label">Thoughts</div>
+    <div class="t-title">X (Twitter)</div>
+    <div class="t-user">@CodeWizard_inc</div>
+  </a>
+
+  <!-- 8. THREADS (wide) -->
+  <a href="https://www.threads.com/@codewizard.inc" target="_blank" class="tile tile-wide span2">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="wide-icon"><i class="fab fa-threads"></i></div>
+    <div class="wide-body">
+      <div class="wide-title">Threads</div>
+      <div class="wide-user">@codewizard.inc</div>
+    </div>
+  </a>
+
+  <!-- 9. LINKEDIN -->
+  <a href="https://www.linkedin.com/in/ronit-majhi-531bb6304" target="_blank" class="tile tile-std span1">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="t-icon"><i class="fab fa-linkedin-in"></i></div>
+    <div class="t-label">Professional</div>
+    <div class="t-title">LinkedIn</div>
+    <div class="t-user">ronit majhi</div>
+  </a>
+
+  <!-- 10. BEHANCE -->
+  <a href="https://www.behance.net/codewizard3" target="_blank" class="tile tile-std span1">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="t-icon"><i class="fab fa-behance"></i></div>
+    <div class="t-label">Creative Work</div>
+    <div class="t-title">Behance</div>
+    <div class="t-user">CodeWizard inc</div>
+  </a>
+
+  <!-- 11. TELEGRAM (wide) -->
+  <a href="https://t.me/ronit_codewizard" target="_blank" class="tile tile-wide span2">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="wide-icon"><i class="fab fa-telegram"></i></div>
+    <div class="wide-body">
+      <div class="wide-title">Telegram</div>
+      <div class="wide-user">@Codewizard_inc</div>
+    </div>
+  </a>
+
+  <!-- 12. DISCORD (wide) -->
+  <a href="https://discord.gg/fAfkMWcNH" target="_blank" class="tile tile-wide span2">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="wide-icon"><i class="fab fa-discord"></i></div>
+    <div class="wide-body">
+      <div class="wide-title">Discord</div>
+      <div class="wide-user">CodeWizard.inc</div>
+    </div>
+  </a>
+
+  <!-- 13. FIGMA -->
+  <a href="https://www.figma.com/@CodeWizard_inc" target="_blank" class="tile tile-std span1">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="t-icon"><i class="fab fa-figma"></i></div>
+    <div class="t-label">Design Files</div>
+    <div class="t-title">Figma</div>
+    <div class="t-user">@CodeWizard_inc</div>
+  </a>
+
+  <!-- 14. BUY ME A COFFEE -->
+   <a href="https://buymeacoffee.com/codewizard.inc" target="_blank" class="tile tile-coffee tile-std span1">
+    <div class="t-arrow"><i class="fas fa-arrow-up-right-from-square"></i></div>
+    <div class="t-icon">
+      <i class="fa fa-buymeacoffee fka"></i>
+    </div>
+    <div class="t-label">Support</div>
+    <div class="t-title">Buy Me a Coffee</div>
+    <div class="t-user">CodeWizard inc</div>
+  </a>
+
+  <!-- 15. SKILLS (full width) -->
+  <div class="tile tile-skills span2" id="skills-section">
+    <div class="skills-head">Skills &amp; Technologies</div>
+    <div class="skills-wrap">
+      <span class="skill-pill"><i class="fab fa-html5"></i> HTML</span>
+      <span class="skill-pill"><i class="fab fa-css3-alt"></i> CSS</span>
+      <span class="skill-pill"><i class="fab fa-js"></i> JavaScript</span>
+      <span class="skill-pill"><i class="fas fa-code"></i> TypeScript</span>
+      <span class="skill-pill"><i class="fab fa-react"></i> React</span>
+      <span class="skill-pill"><i class="fab fa-node-js"></i> Node.js</span>
+      <span class="skill-pill"><i class="fab fa-python"></i> Python</span>
+      <span class="skill-pill"><i class="fab fa-java"></i> Java</span>
+    </div>
+  </div>
+
+  <!-- 16. EMAIL (white CTA, full) -->
+  <a href="mailto:service.codewizard@gmail.com" class="tile tile-contact tile-white span2">
+    <div>
+      <div class="contact-kicker">Direct Line</div>
+      <div class="contact-title">Let's Collaborate</div>
+      <div class="contact-sub">service.codewizard@gmail.com</div>
+    </div>
+    <button class="contact-btn"><i class="fas fa-envelope"></i> Send Mail</button>
+  </a>
+
+  <!-- 17. AVAILABILITY strip -->
+  <div class="tile tile-avail span2">
+    <div class="avail-dot"></div>
+    <div>
+      <div class="avail-title">Available for select projects</div>
+      <div class="avail-sub">Open to freelance, collabs &amp; consulting — 2025</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo">
+        <div class="footer-logo-icon"><img src="https://i.supaimg.com/92f82b8e-0941-4720-9455-b7257d1262f2/6c95b72a-4978-4c1d-bd13-fac0b0e10ea4.png"
+       alt="CodeWizard Logo" style="width:38px;height:38px;object-fit:contain;filter: brightness(0) invert(1);" >
+    </div>
+        <span class="footer-logo-name">CodeWizard</span>
+      </div>
+      <p class="footer-tagline">Building things with code,<br>one spell at a time.</p>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-nav">
+      <a href="https://github.com/Ronit-CodeWizard" target="_blank" class="footer-nav-link"><i class="fab fa-github"></i> GitHub</a>
+      <a href="https://www.youtube.com/@CodeWizard_inc" target="_blank" class="footer-nav-link"><i class="fab fa-youtube"></i> YouTube</a>
+      <a href="https://www.linkedin.com/in/ronit-majhi-531bb6304" target="_blank" class="footer-nav-link"><i class="fab fa-linkedin-in"></i> LinkedIn</a>
+      <a href="https://www.figma.com/@CodeWizard_inc" target="_blank" class="footer-nav-link"><i class="fab fa-figma"></i> Figma</a>
+      <a href="https://buymeacoffee.com/codewizard.inc" target="_blank" class="footer-nav-link"><i class="fa fa-buymeacoffee fka"></i> Support</a>
+      <a href="mailto:service.codewizard@gmail.com" class="footer-nav-link"><i class="fas fa-envelope"></i> Email</a>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 CodeWizard. All rights reserved.</span>
+      <span class="footer-made">Crafted with ♥ by CodeWizard</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* ── Cursor ── */
+  const cur = document.getElementById('cur');
+  if (cur) {
+    document.addEventListener('mousemove', e => {
+      cur.style.left = e.clientX + 'px';
+      cur.style.top  = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, button, .nav-menu-btn').forEach(el => {
+      el.addEventListener('mouseenter', () => cur.classList.add('big'));
+      el.addEventListener('mouseleave', () => cur.classList.remove('big'));
+    });
+  }
+
+  /* ── Popup menu ── */
+  const menuBtn   = document.getElementById('menuBtn');
+  const menuIcon  = document.getElementById('menuIcon');
+  const popupMenu = document.getElementById('popupMenu');
+  let menuOpen = false;
+
+  function toggleMenu() {
+    menuOpen = !menuOpen;
+    popupMenu.classList.toggle('open', menuOpen);
+    menuBtn.classList.toggle('open', menuOpen);
+    menuIcon.className = menuOpen ? 'fas fa-xmark' : 'fas fa-bars';
+  }
+
+  function closeMenu() {
+    menuOpen = false;
+    popupMenu.classList.remove('open');
+    menuBtn.classList.remove('open');
+    menuIcon.className = 'fas fa-bars';
+  }
+
+  // close when clicking outside
+  document.addEventListener('click', e => {
+    if (menuOpen && !menuBtn.contains(e.target) && !popupMenu.contains(e.target)) {
+      closeMenu();
+    }
+  });
+
+  /* ── Count-up ── */
+  function countUp(id, target) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const dur = 1800, start = performance.now();
+    const tick = now => {
+      const t = Math.min((now - start) / dur, 1);
+      const e = 1 - Math.pow(1 - t, 4);
+      const v = Math.round(e * target);
+      el.textContent = v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v;
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    setTimeout(() => requestAnimationFrame(tick), 600);
+  }
+  countUp('repos',   248);
+  countUp('stars',   4200);
+  countUp('commits', 1800);
+</script>
+</body>
+</html>
